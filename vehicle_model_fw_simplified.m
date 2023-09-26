@@ -1,4 +1,4 @@
-function [Qdot,f_qd_q_u,M,O] = vehicle_model_fw_simplified(q,input,delta_c, m_d_c)
+function [Qdot,f_qd_q_u,M,O] = vehicle_model_fw_simplified(q,input,delta_c, m_d_c, F_a_1, F_a_2, F_a_3, F_a_4, z_r_1, z_r_2, z_r_3, z_r_4)
 %vehicle_model_fw_simplified Simplified, abstract, four-wheel vehicle model
 %   This is a four-wheel vehicle model formulated in a simplified, abstract
 %   way. Small angle approximations are used substantially in this
@@ -151,6 +151,11 @@ v = r_cm_d__c(2);
 w = r_cm_d__c(3);
 
 %% Spring Deflections
+zs_1 = -(z + in.a_1*phi - in.s_1*theta);
+zs_2 = -(z + in.a_2*phi - in.s_2*theta);
+zs_3 = -(z + in.a_3*phi - in.s_3*theta);
+zs_4 = -(z + in.a_4*phi - in.s_4*theta);
+
 Delta_s_1 = z_1 - z + in.a_1*phi - in.s_1*theta;
 Delta_s_2 = z_2 - z + in.a_2*phi - in.s_2*theta;
 Delta_s_3 = z_3 - z + in.a_3*phi - in.s_3*theta;
@@ -163,16 +168,25 @@ l_3__c = in.l_03 - Delta_s_3; % Assuming spring deflection is same in chassis an
 l_4__c = in.l_04 - Delta_s_4; % Assuming spring deflection is same in chassis and world frame (small angle)
 
 %% Damper Velocities
+zs_dot_1 = -(z_d + in.a_1*phi_dot - in.s_1*theta_dot);
+zs_dot_2 = -(z_d + in.a_2*phi_dot - in.s_2*theta_dot);
+zs_dot_3 = -(z_d + in.a_3*phi_dot - in.s_3*theta_dot);
+zs_dot_4 = -(z_d + in.a_4*phi_dot - in.s_4*theta_dot);
+
 Delta_d_s_1 = z_d_1 - z_d + in.a_1*phi_dot - in.s_1*theta_dot;
 Delta_d_s_2 = z_d_2 - z_d + in.a_2*phi_dot - in.s_2*theta_dot;
 Delta_d_s_3 = z_d_3 - z_d + in.a_3*phi_dot - in.s_3*theta_dot;
 Delta_d_s_4 = z_d_4 - z_d + in.a_4*phi_dot - in.s_4*theta_dot;
 
 %% Tire Deflection
-Delta_t_1 = -z_1;
-Delta_t_2 = -z_2;
-Delta_t_3 = -z_3;
-Delta_t_4 = -z_4;
+
+if z_r_2 ~=0
+    wejknf=1;
+end
+Delta_t_1 = z_r_1 - z_1;
+Delta_t_2 = z_r_2 - z_2;
+Delta_t_3 = z_r_3 - z_3;
+Delta_t_4 = z_r_4 - z_4;
 
 % Tire Loaded Radius
 r_L_1 = in.r_01 - Delta_t_1;
@@ -301,26 +315,26 @@ M_Mat__0 = [MsMat,                zeros(size(JMat__0)),   zeros(3,4),   zeros(3,
 
 %% Force Summation
 
-g = -9.81;
+g = -input.gravity_switch*9.81;
 
 % Chassis
-F_sm1__0 = F_s1__0 + F_d1__0 + F_cp1__0;
-F_sm2__0 = F_s2__0 + F_d2__0 + F_cp2__0;
-F_sm3__0 = F_s3__0 + F_d3__0 + F_cp3__0;
-F_sm4__0 = F_s4__0 + F_d4__0 + F_cp4__0;
+F_sm1__0 = F_s1__0 + F_d1__0 + F_cp1__0 + [0 0 F_a_1]';
+F_sm2__0 = F_s2__0 + F_d2__0 + F_cp2__0 + [0 0 F_a_2]';
+F_sm3__0 = F_s3__0 + F_d3__0 + F_cp3__0 + [0 0 F_a_3]';
+F_sm4__0 = F_s4__0 + F_d4__0 + F_cp4__0 + [0 0 F_a_4]';
 F_sm_g__0 = [0 0 in.m_s*g]';
 
 % NSM - Corner 1
-F_nsm1__0_3 = -F_s1__0(3) - F_d1__0(3) + F_kt1__0(3) + in.m_u_1*g; % Only Z direction for NSM
+F_nsm1__0_3 = -F_s1__0(3) - F_d1__0(3) + F_kt1__0(3) - F_a_1 + in.m_u_1*g; % Only Z direction for NSM
 
 % NSM - Corner 2
-F_nsm2__0_3 = -F_s2__0(3) - F_d2__0(3) + F_kt2__0(3) + in.m_u_2*g; % Only Z direction for NSM
+F_nsm2__0_3 = -F_s2__0(3) - F_d2__0(3) + F_kt2__0(3) - F_a_2 + in.m_u_2*g; % Only Z direction for NSM
 
 % NSM - Corner 3
-F_nsm3__0_3 = -F_s3__0(3) - F_d3__0(3) + F_kt3__0(3) + in.m_u_3*g; % Only Z direction for NSM
+F_nsm3__0_3 = -F_s3__0(3) - F_d3__0(3) + F_kt3__0(3) - F_a_3 + in.m_u_3*g; % Only Z direction for NSM
 
 % NSM - Corner 4
-F_nsm4__0_3 = -F_s4__0(3) - F_d4__0(3) + F_kt4__0(3) + in.m_u_4*g; % Only Z direction for NSM
+F_nsm4__0_3 = -F_s4__0(3) - F_d4__0(3) + F_kt4__0(3) - F_a_4 + in.m_u_4*g; % Only Z direction for NSM
 
 %% Moment Summation
 
@@ -363,8 +377,25 @@ Qdot = [q_d;
 
 M = M_Mat__0;
 
-O = [u
-     v];
+O = [u;
+     v;
+     zs_1;
+     zs_2;
+     zs_3;
+     zs_4;
+     zs_dot_1;
+     zs_dot_2;
+     zs_dot_3;
+     zs_dot_4;
+     Delta_s_1;
+     Delta_s_2;
+     Delta_s_3;
+     Delta_s_4;
+     Delta_d_s_1;
+     Delta_d_s_2;
+     Delta_d_s_3;
+     Delta_d_s_4
+     ];
 
 
 
