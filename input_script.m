@@ -45,11 +45,24 @@ input.u_max = 150/3.6;
 
 %% INPUT :- Road Input
 
-input.time =     [0 2 4 6 8  10 12 14 16 18 20*10]/34;
+input.time =     [0 2 4 6 8  10 12 14 16 18 20*10]/30;
 input.z_r_1  = 0*[0 0 5 5 0   0  0  0  0  0  0]*1e-3;
 input.z_r_2  = 20*[0 0 5 5 0   0  0  0  0  0  0]*1e-3;
 input.z_r_3  = 0*[0 0 5 5 0   0  0  0  0  0  0]*1e-3;
 input.z_r_4  = 0*[0 0 5 5 0   0  0  0  0  0  0]*1e-3;
+
+[~,input.x_r_1, input.z_r_1] = road_input_selector(input.time(end),3,input.u_start);
+[~,input.x_r_2, input.z_r_2] = road_input_selector(input.time(end),3,input.u_start);
+[~,input.x_r_3, input.z_r_3] = road_input_selector(input.time(end),3,input.u_start);
+[~,input.x_r_4, input.z_r_4] = road_input_selector(input.time(end),3,input.u_start);
+
+load("input_for_road_input.mat")
+input.z_r_1 = input_for_road_input.z_r_1;
+input.z_r_2 = input_for_road_input.z_r_2;
+input.z_r_3 = input_for_road_input.z_r_3;
+input.z_r_4 = input_for_road_input.z_r_4;
+
+
 
 %% INPUT :- Torque Distribution
 
@@ -123,7 +136,7 @@ input.l_04 = 0.35;
 
 % Spring & Damper
 input.k_s = 52500;
-input.d_s = 2400; % SET TO 0 IF CONTROLLER IS TURNED ON
+input.d_s = 10*1240; % SET TO 0 IF CONTROLLER IS TURNED ON
 
 % Tire (Vertical)
 input.k_t = 250000;

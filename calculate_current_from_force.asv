@@ -70,9 +70,9 @@ I_required = (F_desired - F_base*1000)/(1000*(0*c0*v^0 + c1*v^1 + c2*v^2 + c3*v^
 if F_desired*v < 0
     I_required = 0;
 else
-    feriokj=1;
+    
 end
 
-% I_required = (I_required);
+I_required = (I_required);
 
 end

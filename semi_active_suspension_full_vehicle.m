@@ -55,6 +55,10 @@ damper_piston_velocity_1 = O_model(15);
 damper_piston_velocity_2 = O_model(16);
 damper_piston_velocity_3 = O_model(17);
 damper_piston_velocity_4 = O_model(18);
+
+% Vehicle Speed
+Vx = O_model(1);
+Vy = O_model(2);
 %% Initialization : Steering Input
 
 delta_c = interp1(input.time, input.delta, t, "pchip");
@@ -65,10 +69,15 @@ m_d_c = 0;
 %% Initialization : Road Input
 
 % z_r = interp1(input.time, input.z_r, t, 'pchip');
-z_r_1 = interp1(input.time,input.z_r_1,t,"pchip");
-z_r_2 = interp1(input.time,input.z_r_2,t,"pchip");
-z_r_3 = interp1(input.time,input.z_r_3,t,"pchip");
-z_r_4 = interp1(input.time,input.z_r_4,t,"pchip");
+% z_r_1 = interp1(input.time,input.z_r_1,t,"pchip");
+% z_r_2 = interp1(input.time,input.z_r_2,t,"pchip");
+% z_r_3 = interp1(input.time,input.z_r_3,t,"pchip");
+% z_r_4 = interp1(input.time,input.z_r_4,t,"pchip");
+
+z_r_1 = interp1(input.x_r_1,input.z_r_1,Vx*t,"pchip");
+z_r_2 = interp1(input.x_r_2,input.z_r_2,Vx*t,"pchip");
+z_r_3 = interp1(input.x_r_3,input.z_r_3,Vx*t,"pchip");
+z_r_4 = interp1(input.x_r_4,input.z_r_4,Vx*t,"pchip");
 
 %% Initialization : Controll Matrices
 
@@ -95,10 +104,15 @@ Dc_ds = input.cD_mr;
 % The displacement being 0 implies that the position of the sprung mass
 % must not change which implies the position is equal to the steady-state
 % value calculated
-% zs_1_ref = z_r_1;
-% zs_2_ref = z_r_2;
-% zs_3_ref = z_r_3;
-% zs_4_ref = z_r_4;
+zs_1_ref = 0;
+zs_2_ref = 0;
+zs_3_ref = 0;
+zs_4_ref = 0;
+
+zs_dot_1_ref = 0;
+zs_dot_2_ref = 0;
+zs_dot_3_ref = 0;
+zs_dot_4_ref = 0;
 
 suspension_deflection_1_ref = 0;
 suspension_deflection_2_ref = 0;
@@ -114,15 +128,35 @@ suspension_deflection_4_ref = 0;
 % e_z_dot_s = z_dot_s_ref - z_dot_s;
 % e_sus_def =  z_sus_def_ref - (z_u - z_s);
 
+e_zs_1 = zs_1_ref - zs_1;
+e_zs_2 = zs_2_ref - zs_2;
+e_zs_3 = zs_3_ref - zs_3;
+e_zs_4 = zs_4_ref - zs_4;
+
 e_sus_def_1 = suspension_deflection_1_ref - suspension_deflection_1;
 e_sus_def_2 = suspension_deflection_2_ref - suspension_deflection_2;
 e_sus_def_3 = suspension_deflection_3_ref - suspension_deflection_3;
 e_sus_def_4 = suspension_deflection_4_ref - suspension_deflection_4;
 
-error_1 = e_sus_def_1;
-error_2 = e_sus_def_2;
-error_3 = e_sus_def_3;
-error_4 = e_sus_def_4;
+e_sus_vel_1 = - damper_piston_velocity_1;
+e_sus_vel_2 = - damper_piston_velocity_2;
+e_sus_vel_3 = - damper_piston_velocity_3;
+e_sus_vel_4 = - damper_piston_velocity_4;
+
+e_zs_dot_1 = zs_dot_1_ref - zs_dot_1;
+e_zs_dot_2 = zs_dot_2_ref - zs_dot_2;
+e_zs_dot_3 = zs_dot_3_ref - zs_dot_3;
+e_zs_dot_4 = zs_dot_4_ref - zs_dot_4;
+
+% error_1 = e_sus_def_1;
+% error_2 = e_sus_def_2;
+% error_3 = e_sus_def_3;
+% error_4 = e_sus_def_4;
+
+error_1 = e_zs_1;
+error_2 = e_zs_2;
+error_3 = e_zs_3;
+error_4 = e_zs_4;
 
 %% Controller Action - Desired Controller Force
 
@@ -138,9 +172,13 @@ F_active_damper_2 = input.controller_switch * y_mr_2;
 F_active_damper_3 = input.controller_switch * y_mr_3;
 F_active_damper_4 = input.controller_switch * y_mr_4;
 
-% kp = 400000;
-% ki = 1000;
-% F_active_damper = kp*e_zs ;
+% kp = 0;
+% ki = 100000;
+% kd = 500000;
+% F_active_damper_1 = -input.controller_switch * (ki*error_1 + kd*e_sus_vel_1);
+% F_active_damper_2 = -input.controller_switch * (ki*error_2 + kd*e_sus_vel_2);
+% F_active_damper_3 = -input.controller_switch * (ki*error_3 + kd*e_sus_vel_3);
+% F_active_damper_4 = -input.controller_switch * (ki*error_4 + kd*e_sus_vel_4);
 
 %% Inverse Controller Model - Realizeable Controller Force
 
@@ -217,8 +255,10 @@ O_simulator = [error_1;
                damper_piston_velocity_1;
                damper_piston_velocity_2;
                damper_piston_velocity_3;
-               damper_piston_velocity_4
-               O_model(1)]';
+               damper_piston_velocity_4;
+               O_model(1);
+               O_model(19)
+               ]';
 
 
 
