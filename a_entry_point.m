@@ -14,7 +14,7 @@
 % -> IMPORTANT :- The order in which the scripts are called below are very
 %                 important. Changing the order will result in faulty
 %                 simulation
-clc;
+% clc;
 clear;
 addpath(genpath(pwd));
 
@@ -46,7 +46,7 @@ Z0 = [q0';
 % Integration options
 opts = odeset("RelTol",1e-3,'MaxStep',0.01);
 
-[t,Z] = ode15s(@(t,Z)semi_active_suspension_full_vehicle(t,Z,input), [0 input.time(end)], Z0, opts);
+[t,Z] = ode45(@(t,Z)semi_active_suspension_full_vehicle(t,Z,input), [0 input.time(end)], Z0);
 
 % Output matrix initialization
 n_outputs = 22;
@@ -77,8 +77,14 @@ legend('z_u_4')
 
 
 % Sprung Mass Acceleration
+% figure
+% plot(t,O(:,22) , col)
+% legend('$\ddot{z}_{s}$','Interpreter','latex')
+% grid minor
+% set(findall(gcf,'-property','FontSize'),'FontSize',16)
 figure
-plot(t,O(:,22) , col)
+z_ddot = [0;diff(diff(Z(:,3)))]./diff(t);
+plot(t,[0;z_ddot], col)
 legend('$\ddot{z}_{s}$','Interpreter','latex')
 grid minor
 set(findall(gcf,'-property','FontSize'),'FontSize',16)

@@ -1,4 +1,4 @@
-function [I_required] = calculate_current_from_force(F_desired, damper_piston_velocity)
+function [I_required] = calculate_current_from_force(F_desired, damper_piston_velocity, zs_dot_i)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -56,23 +56,17 @@ b9 = 0;
 b10 = 0;
 b11 = 0;
 
-if F_desired*v > 0
-    can_increase_current = 1;
-else
-    no_point_increasing_current = 1;
-end
-
 
 F_base = 0*(0*b0*v^0 + b1*v^1 + b2*v^2 + b3*v^3 + b4*v^4 + b5*v^5 + b6*v^6 + b7*v^7 + b8*v^8 + b9*v^9 + b10*v^10 + b11*v^11);
 
 I_required = (F_desired - F_base*1000)/(1000*(0*c0*v^0 + c1*v^1 + c2*v^2 + c3*v^3 + c4*v^4 + c5*v^5 + c6*v^6 + c7*v^7 + c8*v^8 + c9*v^9 + c10*v^10 + c11*v^11));
 
-if F_desired*v < 0
-    I_required = 0;
-else
-    feriokj=1;
-end
+% if F_desired*v < 0
+%     I_required = 0;
+% end
 
-% I_required = (I_required);
+% if zs_dot_i*(damper_piston_velocity) > 0
+%     I_required = 0;
+% end
 
 end

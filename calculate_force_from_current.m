@@ -1,4 +1,4 @@
-function [F_possible] = calculate_force_from_current(I_possible, damper_piston_velocity)
+function [F_possible] = calculate_force_from_current(F_desired, I_possible, damper_piston_velocity, zs_dot_i)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -64,4 +64,18 @@ F_current = (0*c0*v^0 + c1*v^1 + c2*v^2 + c3*v^3 + c4*v^4 + c5*v^5 + c6*v^6 + c7
 F_possible = F_base + F_current;
 
 F_possible = 1000*F_possible;
+
+if F_desired*v < 0
+    F_possible = 0;
+end
+% if zs_dot_i*(damper_piston_velocity) > 0
+%     F_possible = 1240*damper_piston_velocity;
+% else
+%     F_possible = 0;
+% end
+
+
+
+
+
 end

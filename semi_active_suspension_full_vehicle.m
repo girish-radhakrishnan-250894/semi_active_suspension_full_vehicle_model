@@ -153,10 +153,10 @@ e_zs_dot_4 = zs_dot_4_ref - zs_dot_4;
 % error_3 = e_sus_def_3;
 % error_4 = e_sus_def_4;
 
-error_1 = e_zs_1;
-error_2 = e_zs_2;
-error_3 = e_zs_3;
-error_4 = e_zs_4;
+error_1 = e_zs_dot_1;
+error_2 = e_zs_dot_2;
+error_3 = e_zs_dot_3;
+error_4 = e_zs_dot_4;
 
 %% Controller Action - Desired Controller Force
 
@@ -172,14 +172,29 @@ F_active_damper_2 = input.controller_switch * y_mr_2;
 F_active_damper_3 = input.controller_switch * y_mr_3;
 F_active_damper_4 = input.controller_switch * y_mr_4;
 
-% kp = 0;
-% ki = 100000;
-% kd = 500000;
-% F_active_damper_1 = -input.controller_switch * (ki*error_1 + kd*e_sus_vel_1);
-% F_active_damper_2 = -input.controller_switch * (ki*error_2 + kd*e_sus_vel_2);
-% F_active_damper_3 = -input.controller_switch * (ki*error_3 + kd*e_sus_vel_3);
-% F_active_damper_4 = -input.controller_switch * (ki*error_4 + kd*e_sus_vel_4);
+kp = 8000;
+ki = 250;
+kd = 0;
+F_active_damper_1 = input.controller_switch * (kp*e_zs_dot_1 + ki*e_zs_1 + kd*e_zs_dot_1);
+F_active_damper_2 = input.controller_switch * (kp*e_zs_dot_2 + ki*e_zs_2 + kd*e_zs_dot_2);
+F_active_damper_3 = input.controller_switch * (kp*e_zs_dot_3 + ki*e_zs_3 + kd*e_zs_dot_3);
+F_active_damper_4 = input.controller_switch * (kp*e_zs_dot_4 + ki*e_zs_4 + kd*e_zs_dot_4);
 
+if F_active_damper_1*damper_piston_velocity_1 < 0
+    F_active_damper_1 = 00*damper_piston_velocity_1;
+end
+
+if F_active_damper_2*damper_piston_velocity_2 < 0
+    F_active_damper_2 = 00*damper_piston_velocity_2;
+end
+
+if F_active_damper_3*damper_piston_velocity_3 < 0
+    F_active_damper_3 = 00*damper_piston_velocity_3;
+end
+
+if F_active_damper_4*damper_piston_velocity_4 < 0
+    F_active_damper_4 = 00*damper_piston_velocity_4;
+end
 %% Inverse Controller Model - Realizeable Controller Force
 
 % Minimum suppliable current (Reference - Tenecco Active Damper)
@@ -189,10 +204,10 @@ I_min = input.I_min; % A
 I_max = input.I_max; % A
 
 
-I_required_1 = calculate_current_from_force(F_active_damper_1, damper_piston_velocity_1);
-I_required_2 = calculate_current_from_force(F_active_damper_2, damper_piston_velocity_2);
-I_required_3 = calculate_current_from_force(F_active_damper_3, damper_piston_velocity_3);
-I_required_4 = calculate_current_from_force(F_active_damper_4, damper_piston_velocity_4);
+I_required_1 = calculate_current_from_force(F_active_damper_1, damper_piston_velocity_1, zs_dot_1);
+I_required_2 = calculate_current_from_force(F_active_damper_2, damper_piston_velocity_2, zs_dot_2);
+I_required_3 = calculate_current_from_force(F_active_damper_3, damper_piston_velocity_3, zs_dot_3);
+I_required_4 = calculate_current_from_force(F_active_damper_4, damper_piston_velocity_4, zs_dot_4);
 
 I_possible_1 = calculate_possible_current(I_required_1,I_min,I_max);
 I_possible_2 = calculate_possible_current(I_required_2,I_min,I_max);
@@ -200,10 +215,10 @@ I_possible_3 = calculate_possible_current(I_required_3,I_min,I_max);
 I_possible_4 = calculate_possible_current(I_required_4,I_min,I_max);
 
 
-F_active_damper_1 = input.controller_switch*calculate_force_from_current(I_possible_1, damper_piston_velocity_1);
-F_active_damper_2 = input.controller_switch*calculate_force_from_current(I_possible_2, damper_piston_velocity_2);
-F_active_damper_3 = input.controller_switch*calculate_force_from_current(I_possible_3, damper_piston_velocity_3);
-F_active_damper_4 = input.controller_switch*calculate_force_from_current(I_possible_4, damper_piston_velocity_4);
+% F_active_damper_1 = input.controller_switch*calculate_force_from_current(F_active_damper_1, I_possible_1, damper_piston_velocity_1, zs_dot_1);
+% F_active_damper_2 = input.controller_switch*calculate_force_from_current(F_active_damper_2, I_possible_2, damper_piston_velocity_2, zs_dot_2);
+% F_active_damper_3 = input.controller_switch*calculate_force_from_current(F_active_damper_3, I_possible_3, damper_piston_velocity_3, zs_dot_3);
+% F_active_damper_4 = input.controller_switch*calculate_force_from_current(F_active_damper_4, I_possible_4, damper_piston_velocity_4, zs_dot_4);
 
 %% Quarter car system dynamics
 

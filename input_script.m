@@ -135,8 +135,8 @@ input.l_04 = 0.35;
 %% INPUT :- PROPERTIES : COMPONENT
 
 % Spring & Damper
-input.k_s = 52500;
-input.d_s = 10*1240; % SET TO 0 IF CONTROLLER IS TURNED ON
+input.k_s = 52000;
+input.d_s = 1*2440; % SET TO 0 IF CONTROLLER IS TURNED ON
 
 % Tire (Vertical)
 input.k_t = 250000;
